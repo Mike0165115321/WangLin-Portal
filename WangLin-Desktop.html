@@ -4,28 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>WangLin Desktop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1920px;height:1080px;overflow:hidden;font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif}
 body{background:#0a0a12;position:relative}
 
+/* === Z-INDEX SCALE === */
+/* bg(0) > overlay(1) > ambient(2) > clock(5) > label(5) > search(20) > dock(10) > modal(50) > toast(60) */
+
 /* === BG === */
 .bg{position:absolute;inset:0;z-index:0;background:url('https://images.pexels.com/photos/34514431/pexels-photo-34514431.jpeg') center/cover no-repeat;animation:zoom 30s ease-in-out infinite alternate}
 @keyframes zoom{0%{transform:scale(1)}100%{transform:scale(1.05)}}
-.overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,0.4) 0%,rgba(0,0,0,0.15) 30%,rgba(0,0,0,0.15) 70%,rgba(0,0,0,0.4) 100%)}
-.ambient{position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse 70% 40% at 50% 100%,rgba(80,160,100,0.06),transparent 70%)}
+@media(prefers-reduced-motion:reduce){.bg{animation:none}}
+.overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,0.45) 0%,rgba(0,0,0,0.10) 25%,rgba(0,0,0,0.08) 50%,rgba(0,0,0,0.20) 75%,rgba(0,0,0,0.50) 100%)}
+.ambient{position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse 75% 35% at 50% 100%,rgba(255,180,80,0.05),transparent 70%)}
 
 /* === CENTER CLOCK === */
-.center{position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);z-index:5;text-align:center;pointer-events:none}
-.clock{font-size:clamp(64px,7vw,96px);font-weight:200;color:#fff;letter-spacing:4px;line-height:1;font-variant-numeric:tabular-nums}
-.clock .sec{font-size:0.35em;color:rgba(255,255,255,0.2);font-weight:200;vertical-align:super;margin-left:6px}
-.date-below{font-size:16px;color:rgba(255,255,255,0.35);letter-spacing:2px;margin-top:6px;font-weight:300}
+.center{position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);z-index:5;text-align:center;pointer-events:none;user-select:none}
+.clock{font-size:clamp(64px,7vw,96px);font-weight:200;color:#fff;letter-spacing:4px;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 2px 30px rgba(0,0,0,0.15)}
+.clock .sec{font-size:0.35em;color:rgba(255,255,255,0.2);font-weight:200;vertical-align:super;margin-left:6px;transition:opacity 0.15s}
+.date-below{font-size:16px;color:rgba(255,255,255,0.35);letter-spacing:2px;margin-top:6px;font-weight:300;text-shadow:0 1px 12px rgba(0,0,0,0.1)}
 .greeting-below{font-size:13px;color:rgba(255,255,255,0.2);letter-spacing:3px;margin-top:2px;font-weight:300;text-transform:uppercase}
+
+/* === SEARCH BAR === */
+.search-bar{position:absolute;top:24px;left:50%;transform:translateX(-50%);z-index:20;
+  background:rgba(0,0,0,0.15);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.04);border-radius:20px;padding:8px 20px;
+  display:flex;align-items:center;gap:8px;width:280px;pointer-events:auto;cursor:text;
+  transition:all 0.25s cubic-bezier(0.4,0,0.2,1)}
+.search-bar:hover{background:rgba(0,0,0,0.25);border-color:rgba(255,255,255,0.08);width:300px}
+.search-bar svg{width:14px;height:14px;opacity:0.3;color:#fff;flex-shrink:0}
+.search-bar .search-hint{font-size:13px;color:rgba(255,255,255,0.2);letter-spacing:0.3px;font-weight:300}
+.search-bar .search-key{font-size:10px;color:rgba(255,255,255,0.1);margin-left:auto;border:1px solid rgba(255,255,255,0.06);border-radius:4px;padding:1px 6px;letter-spacing:0.5px}
 
 /* === DOCK WRAPPER === */
 .dock-wrap{position:absolute;bottom:0;left:0;right:0;z-index:10;
-  background:linear-gradient(0deg,rgba(0,0,0,0.5) 0%,rgba(0,0,0,0.2) 60%,transparent 100%);
-  padding:30px 20px 18px;display:flex;justify-content:center}
+  background:linear-gradient(0deg,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.15) 55%,transparent 100%);
+  padding:30px 20px 16px;display:flex;justify-content:center;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 
 /* === DOCK SCROLL === */
 .dock-scroll{max-width:1400px;overflow-x:auto;overflow-y:hidden;display:flex;gap:4px;padding:8px 4px;
@@ -34,22 +53,16 @@ body{background:#0a0a12;position:relative}
 
 /* === DOCK ITEMS === */
 .dock-item{flex-shrink:0;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.04);text-decoration:none;color:#fff;
-  transition:all 0.2s cubic-bezier(0.4,0,0.2,1);cursor:pointer;position:relative}
-.dock-item:hover{transform:translateY(-6px);background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.1);box-shadow:0 6px 20px rgba(0,0,0,0.3)}
-.dock-item svg{width:20px;height:20px}
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03);text-decoration:none;color:#fff;
+  transition:all 0.25s cubic-bezier(0.4,0,0.2,1);cursor:pointer;position:relative}
+.dock-item:hover{transform:translateY(-6px) scale(1.05);background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.08);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.dock-item:active{transform:translateY(-2px) scale(0.97)}
+.dock-item svg{width:20px;height:20px;transition:transform 0.2s}
+.dock-item:hover svg{transform:scale(1.1)}
 .dock-item .tip{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:rgba(255,255,255,0.25);white-space:nowrap;
   opacity:0;transition:opacity 0.15s;pointer-events:none;letter-spacing:0.3px}
 .dock-item:hover .tip{opacity:1}
-.dock-divider{flex-shrink:0;width:1px;background:rgba(255,255,255,0.06);margin:8px 4px}
-
-/* === SEARCH BAR === */
-.search-bar{position:absolute;top:24px;left:50%;transform:translateX(-50%);z-index:10;
-  background:rgba(0,0,0,0.2);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,0.04);border-radius:20px;padding:8px 20px;
-  display:flex;align-items:center;gap:8px;width:300px;pointer-events:auto;cursor:text}
-.search-bar svg{width:14px;height:14px;opacity:0.3;color:#fff;flex-shrink:0}
-.search-bar span{font-size:13px;color:rgba(255,255,255,0.2);letter-spacing:0.5px;font-weight:300}
+.dock-divider{flex-shrink:0;width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,0.06),transparent);margin:8px 4px}
 
 /* === DESKTOP LABEL === */
 .desk-label{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);z-index:5;pointer-events:none;
@@ -63,14 +76,15 @@ body{background:#0a0a12;position:relative}
 <div class="ambient"></div>
 
 <!-- Search -->
-<div class="search-bar" onclick="alert('🔍 ค้นหา... (กดจริงต้องเชื่อมกับ start menu)')">
+<div class="search-bar" onclick="var q=prompt('🔍 ค้นหา Google:','');if(q&&q.trim())window.open('https://www.google.com/search?q='+encodeURIComponent(q.trim()),'_blank')">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  <span>ค้นหาแอปและเว็บ...</span>
+  <span class="search-hint">ค้นหาเว็บ</span>
+  <span class="search-key">⌘K</span>
 </div>
 
 <!-- Center Clock -->
 <div class="center">
-  <div class="clock" id="clockDisplay">00:00<span class="sec" id="secDisplay">00</span></div>
+  <div class="clock"><span id="clockH">00</span>:<span id="clockM">00</span><span class="sec" id="secDisplay">00</span></div>
   <div class="date-below" id="dateDisplay">---</div>
   <div class="greeting-below" id="greetingDisplay">✦ WANGLIN ✦</div>
 </div>
@@ -214,14 +228,30 @@ body{background:#0a0a12;position:relative}
 const thaiMonths = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const thaiDays = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
 const greetings = ['ราตรีสวัสดิ์','สวัสดีตอนเช้า','สวัสดีตอนบ่าย','สวัสดีตอนเย็น'];
+const $ = id => document.getElementById(id);
+var prevMin = -1, prevGreet = -1;
 
 function updateClock(){
   const n=new Date();
   const h=n.getHours(), m=n.getMinutes(), s=n.getSeconds();
-  document.getElementById('clockDisplay').innerHTML=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}<span class="sec">${String(s).padStart(2,'0')}</span>`;
-  document.getElementById('dateDisplay').textContent=`วัน${thaiDays[n.getDay()]}ที่ ${n.getDate()} ${thaiMonths[n.getMonth()]} ${n.getFullYear()+543}`;
+  const hh = String(h).padStart(2,'0');
+  const mm = String(m).padStart(2,'0');
+  const ss = String(s).padStart(2,'0');
+
+  // Only update hour:min when they change (preserve sec element)
+  if(m !== prevMin) {
+    $('clockH').textContent = hh;
+    $('clockM').textContent = mm;
+    prevMin = m;
+  }
+  $('secDisplay').textContent = ss;
+
+  $('dateDisplay').textContent=`วัน${thaiDays[n.getDay()]}ที่ ${n.getDate()} ${thaiMonths[n.getMonth()]} ${n.getFullYear()+543}`;
   const idx = h < 6 ? 0 : h < 12 ? 1 : h < 18 ? 2 : 3;
-  document.getElementById('greetingDisplay').textContent = `${greetings[idx]} ไมค์ · WangLin`;
+  if(idx !== prevGreet) {
+    $('greetingDisplay').textContent = `${greetings[idx]} ไมค์ · WangLin`;
+    prevGreet = idx;
+  }
 }
 updateClock();
 setInterval(updateClock,1000);
