@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>WangLin Desktop</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif}
+body{background:#0a0a12;position:relative}
+
+/* === BG === */
+.bg{position:absolute;inset:0;z-index:0;background:url('https://images.pexels.com/photos/34514431/pexels-photo-34514431.jpeg') center/cover no-repeat;animation:zoom 30s ease-in-out infinite alternate}
+@keyframes zoom{0%{transform:scale(1)}100%{transform:scale(1.05)}}
+.overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,0.4) 0%,rgba(0,0,0,0.15) 30%,rgba(0,0,0,0.15) 70%,rgba(0,0,0,0.4) 100%)}
+.ambient{position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse 70% 40% at 50% 100%,rgba(80,160,100,0.06),transparent 70%)}
+
+/* === CENTER CLOCK === */
+.center{position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);z-index:5;text-align:center;pointer-events:none}
+.clock{font-size:clamp(64px,7vw,96px);font-weight:200;color:#fff;letter-spacing:4px;line-height:1;font-variant-numeric:tabular-nums}
+.clock .sec{font-size:0.35em;color:rgba(255,255,255,0.2);font-weight:200;vertical-align:super;margin-left:6px}
+.date-below{font-size:16px;color:rgba(255,255,255,0.35);letter-spacing:2px;margin-top:6px;font-weight:300}
+.greeting-below{font-size:13px;color:rgba(255,255,255,0.2);letter-spacing:3px;margin-top:2px;font-weight:300;text-transform:uppercase}
+
+/* === DOCK WRAPPER === */
+.dock-wrap{position:absolute;bottom:0;left:0;right:0;z-index:10;
+  background:linear-gradient(0deg,rgba(0,0,0,0.5) 0%,rgba(0,0,0,0.2) 60%,transparent 100%);
+  padding:30px 20px 18px;display:flex;justify-content:center}
+
+/* === DOCK SCROLL === */
+.dock-scroll{max-width:1400px;overflow-x:auto;overflow-y:hidden;display:flex;gap:4px;padding:8px 4px;
+  scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth}
+.dock-scroll::-webkit-scrollbar{display:none}
+
+/* === DOCK ITEMS === */
+.dock-item{flex-shrink:0;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.04);text-decoration:none;color:#fff;
+  transition:all 0.2s cubic-bezier(0.4,0,0.2,1);cursor:pointer;position:relative}
+.dock-item:hover{transform:translateY(-6px);background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.1);box-shadow:0 6px 20px rgba(0,0,0,0.3)}
+.dock-item svg{width:20px;height:20px}
+.dock-item .tip{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:rgba(255,255,255,0.25);white-space:nowrap;
+  opacity:0;transition:opacity 0.15s;pointer-events:none;letter-spacing:0.3px}
+.dock-item:hover .tip{opacity:1}
+.dock-divider{flex-shrink:0;width:1px;background:rgba(255,255,255,0.06);margin:8px 4px}
+
+/* === SEARCH BAR === */
+.search-bar{position:absolute;top:24px;left:50%;transform:translateX(-50%);z-index:10;
+  background:rgba(0,0,0,0.2);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.04);border-radius:20px;padding:8px 20px;
+  display:flex;align-items:center;gap:8px;width:300px;pointer-events:auto;cursor:text}
+.search-bar svg{width:14px;height:14px;opacity:0.3;color:#fff;flex-shrink:0}
+.search-bar span{font-size:13px;color:rgba(255,255,255,0.2);letter-spacing:0.5px;font-weight:300}
+
+/* === DESKTOP LABEL === */
+.desk-label{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);z-index:5;pointer-events:none;
+  font-size:10px;color:rgba(255,255,255,0.04);letter-spacing:4px;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="overlay"></div>
+<div class="ambient"></div>
+
+<!-- Search -->
+<div class="search-bar" onclick="alert('🔍 ค้นหา... (กดจริงต้องเชื่อมกับ start menu)')">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  <span>ค้นหาแอปและเว็บ...</span>
+</div>
+
+<!-- Center Clock -->
+<div class="center">
+  <div class="clock" id="clockDisplay">00:00<span class="sec" id="secDisplay">00</span></div>
+  <div class="date-below" id="dateDisplay">---</div>
+  <div class="greeting-below" id="greetingDisplay">✦ WANGLIN ✦</div>
+</div>
+
+<!-- Dock -->
+<div class="dock-wrap">
+<div class="dock-scroll" id="dock">
+
+  <!-- Row 1: Social & Dev -->
+  <a class="dock-item" href="https://github.com/Mike0165115321" target="_blank" title="GitHub">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+    <span class="tip">GitHub</span>
+  </a>
+  <a class="dock-item" href="https://youtube.com" target="_blank" title="YouTube">
+    <svg viewBox="0 0 24 24" fill="#ff4444"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+    <span class="tip">YouTube</span>
+  </a>
+  <a class="dock-item" href="https://facebook.com" target="_blank" title="Facebook">
+    <svg viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+    <span class="tip">Facebook</span>
+  </a>
+  <a class="dock-item" href="https://instagram.com" target="_blank" title="Instagram">
+    <svg viewBox="0 0 24 24" fill="#e4405f"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+    <span class="tip">Instagram</span>
+  </a>
+  <a class="dock-item" href="https://x.com" target="_blank" title="Twitter/X">
+    <svg viewBox="0 0 24 24" fill="#fff"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    <span class="tip">Twitter</span>
+  </a>
+  <a class="dock-item" href="https://www.tiktok.com" target="_blank" title="TikTok">
+    <svg viewBox="0 0 24 24" fill="#fff"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+    <span class="tip">TikTok</span>
+  </a>
+
+  <div class="dock-divider"></div>
+
+  <!-- Row 2: AI Tools -->
+  <a class="dock-item" href="https://chatgpt.com" target="_blank" title="ChatGPT">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span class="tip">ChatGPT</span>
+  </a>
+  <a class="dock-item" href="https://claude.ai" target="_blank" title="Claude">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+    <span class="tip">Claude</span>
+  </a>
+  <a class="dock-item" href="https://chat.qwen.ai" target="_blank" title="Qwen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    <span class="tip">Qwen</span>
+  </a>
+  <a class="dock-item" href="https://www.deepseek.com" target="_blank" title="DeepSeek">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#4fc3f7" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    <span class="tip">DeepSeek</span>
+  </a>
+  <a class="dock-item" href="https://gemini.google.com" target="_blank" title="Gemini">
+    <svg viewBox="0 0 24 24" fill="#1a73e8"><path d="M12 2C8 2 4 6 4 10c0 3.5 2.5 6.5 6 7.5V22l4-4.5c3.5-1 6-4 6-7.5 0-4-4-8-8-8z"/></svg>
+    <span class="tip">Gemini</span>
+  </a>
+
+  <div class="dock-divider"></div>
+
+  <!-- Row 3: Tools & Work -->
+  <a class="dock-item" href="https://mail.google.com" target="_blank" title="Gmail">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ea4335" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4l-10 8L2 4"/></svg>
+    <span class="tip">Gmail</span>
+  </a>
+  <a class="dock-item" href="https://drive.google.com" target="_blank" title="Drive">
+    <svg viewBox="0 0 24 24" fill="#fbbc04"><path d="M12 2L2 14h7l3-4 3 4h7L12 2zM2 16l4 6h12l4-6H2z"/></svg>
+    <span class="tip">Drive</span>
+  </a>
+  <a class="dock-item" href="https://obsidian.md" target="_blank" title="Obsidian">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M12 3l9 6-9 6-9-6 9-6z"/><path d="M3 12l9 6 9-6"/></svg>
+    <span class="tip">Obsidian</span>
+  </a>
+  <a class="dock-item" href="https://www.framer.com" target="_blank" title="Framer">
+    <svg viewBox="0 0 24 24" fill="#0055ff"><path d="M12 0v8H4v8h8v8l8-8V0h-8z"/></svg>
+    <span class="tip">Framer</span>
+  </a>
+  <a class="dock-item" href="https://github.com/Mike0165115321/Aetox" target="_blank" title="Aetox">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#8fbf7f" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/></svg>
+    <span class="tip">Aetox</span>
+  </a>
+  <a class="dock-item" href="https://www.notion.so" target="_blank" title="Notion">
+    <svg viewBox="0 0 24 24" fill="#fff"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373.933 1.12.793l14.685-.887c.747-.047.747-.56.747-1.12V5.993c0-.373-.14-.653-.513-.56l-15.186 1.12c-.42.047-.84.28-.84.746zm14.04-.56v12.2c0 .28-.187.373-.327.327l-12.8.84c-.233.014-.28-.14-.28-.327V6.858c0-.233.14-.327.327-.327l12.572-.607c.233 0 .513.14.513.607z"/></svg>
+    <span class="tip">Notion</span>
+  </a>
+
+  <div class="dock-divider"></div>
+
+  <!-- Row 4: Media & Fun -->
+  <a class="dock-item" href="https://open.spotify.com" target="_blank" title="Spotify">
+    <svg viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    <span class="tip">Spotify</span>
+  </a>
+  <a class="dock-item" href="https://www.netflix.com" target="_blank" title="Netflix">
+    <svg viewBox="0 0 24 24" fill="#e50914"><path d="M5.398 0v.006c3.028 8.556 5.37 15.175 8.348 23.596 2.344.058 4.85.398 7.166.398 0-1.44 0-3.478-.006-4.918-1.898-.146-4.71-.556-6.472-1.122l6.478-17.556V0H15.81l-4.374 12.27L7.574 0H5.398z"/></svg>
+    <span class="tip">Netflix</span>
+  </a>
+  <a class="dock-item" href="https://www.twitch.tv" target="_blank" title="Twitch">
+    <svg viewBox="0 0 24 24" fill="#9146ff"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+    <span class="tip">Twitch</span>
+  </a>
+  <a class="dock-item" href="https://www.reddit.com" target="_blank" title="Reddit">
+    <svg viewBox="0 0 24 24" fill="#ff4500"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.633 4.703 1.544a.84.84 0 0 1 .385-.07c.71 0 1.286.574 1.286 1.286 0 .573-.368 1.06-.879 1.227a3.76 3.76 0 0 1 .026.422c0 2.791-3.252 5.053-7.25 5.053s-7.25-2.262-7.25-5.053c0-.14.009-.28.026-.422a1.29 1.29 0 0 1-.88-1.227c0-.712.576-1.286 1.286-1.286.13 0 .26.024.385.07 1.223-.911 2.88-1.474 4.703-1.544l.858-4.032a.342.342 0 0 1 .29-.274l3.72-.78a.38.38 0 0 1 .388.26l.69 2.755a1.24 1.24 0 0 1 .72-.217zM9.42 13.45a1.73 1.73 0 0 0-1.727 1.727 1.73 1.73 0 0 0 1.727 1.727 1.73 1.73 0 0 0 1.727-1.727 1.73 1.73 0 0 0-1.727-1.727zm5.16 0a1.73 1.73 0 0 0-1.727 1.727 1.73 1.73 0 0 0 1.727 1.727 1.73 1.73 0 0 0 1.727-1.727 1.73 1.73 0 0 0-1.727-1.727zm-5.16 2.776a.83.83 0 0 0-.83.83.83.83 0 0 0 .83.83.83.83 0 0 0 .83-.83.83.83 0 0 0-.83-.83zm5.16 0a.83.83 0 0 0-.83.83.83.83 0 0 0 .83.83.83.83 0 0 0 .83-.83.83.83 0 0 0-.83-.83z"/></svg>
+    <span class="tip">Reddit</span>
+  </a>
+  <a class="dock-item" href="https://discord.com/app" target="_blank" title="Discord">
+    <svg viewBox="0 0 24 24" fill="#5865f2"><path d="M20.317 4.3698a19.7913 19.7913 0 0 0-4.8851-1.5152.0741.0741 0 0 0-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 0 0-.0785-.037 19.7363 19.7363 0 0 0-4.8852 1.515.0699.0699 0 0 0-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 0 0 .0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 0 0 .0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 0 0-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 0 1-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 0 1 .0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 0 1 .0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 0 1-.0066.1276 12.2986 12.2986 0 0 1-1.873.8914.0766.0766 0 0 0-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 0 0 .0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 0 0 .0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 0 0-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/></svg>
+    <span class="tip">Discord</span>
+  </a>
+
+  <div class="dock-divider"></div>
+
+  <!-- Row 5: Coding -->
+  <a class="dock-item" href="https://github.com" target="_blank" title="GitHub Explore">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    <span class="tip">Explore</span>
+  </a>
+  <a class="dock-item" href="https://stackoverflow.com" target="_blank" title="Stack Overflow">
+    <svg viewBox="0 0 24 24" fill="#f58025"><path d="M18.986 21.865v-6.404h2.134V24H1.844v-8.539h2.13v6.404h15.012zM6.111 19.731H16.85v-2.137H6.111v2.137zm.259-4.852l10.48 2.189.451-2.07-10.478-2.187-.453 2.068zm1.359-5.056l9.705 4.53.903-1.95-9.706-4.53-.902 1.95zm3.511-4.357l8.229 6.747 1.344-1.636-8.227-6.746-1.346 1.635zm4.692-4.817L15.2 2.888l7.364 6.346 1.527-1.732-7.381-6.344z"/></svg>
+    <span class="tip">StackOverflow</span>
+  </a>
+  <a class="dock-item" href="https://www.python.org" target="_blank" title="Python">
+    <svg viewBox="0 0 24 24" fill="#3776ab"><path d="M12 0C5.383 0 0 5.383 0 12s5.383 12 12 12 12-5.383 12-12S18.617 0 12 0zM9.934 4.365c1.043-.005 2.095.004 3.14 0 .624 0 1.155.056 1.595.195.342.108.632.276.85.501.21.217.338.485.385.8.025.162.013.339.01.508v3.23c0 .528-.162.874-.473 1.147-.305.27-.734.433-1.216.477-.396.036-.806.001-1.275.001-.422 0-.834.039-1.207.143-.395.111-.724.305-.92.584-.17.239-.244.511-.244.845v1.576h-2.33v-1.48c-.003-.513.088-.977.297-1.379.211-.403.509-.73.903-.97.393-.238.855-.397 1.37-.465.36-.047.88-.038 1.25-.038.363 0 .79-.03 1.155-.132.304-.086.557-.245.746-.472.17-.202.248-.45.248-.77V9.152l.002-.002V8.803c0-.363-.117-.643-.331-.857-.214-.214-.562-.325-.987-.332-.533-.01-1.065.005-1.598-.003-.5-.008-.907-.2-1.095-.595-.094-.196-.144-.423-.144-.68v-.678c0-.136.005-.27.018-.406l.002-.002.002-.006c.023-.308.147-.56.365-.746.218-.187.523-.305.915-.38.206-.04.43-.06.679-.072zM7.476 8.473c.592 0 1.072.48 1.072 1.072 0 .592-.48 1.073-1.072 1.073s-1.072-.48-1.072-1.073c0-.59.48-1.072 1.072-1.072z"/></svg>
+    <span class="tip">Python</span>
+  </a>
+  <a class="dock-item" href="https://nodejs.org" target="_blank" title="Node.js">
+    <svg viewBox="0 0 24 24" fill="#339933"><path d="M11.998 0c-.189 0-.377.045-.549.138L2.326 5.902a1.116 1.116 0 0 0-.551.954v10.288c0 .404.213.777.551.954l9.123 5.764c.172.093.36.138.549.138.189 0 .377-.045.549-.138l9.123-5.764c.338-.177.551-.55.551-.954V6.856c0-.404-.213-.777-.551-.954L12.547.138A1.09 1.09 0 0 0 11.998 0zm.131 2.59l8.124 5.135c.226.142.226.366 0 .508l-8.124 5.135c-.226.142-.596.142-.822 0L3.082 8.233c-.226-.142-.226-.366 0-.508l8.124-5.135c.226-.142.596-.142.822 0zm-9.82 12.092l7.335 4.635c.226.143.226.366 0 .508l-7.02 4.437c-.226.143-.596.143-.822 0l-2.18-1.377c-.226-.143-.226-.366 0-.508l2.688-1.698c.226-.143.596-.143.822 0 0 0 5.48 3.463 5.509 3.48.028.018.056.018.084 0l7.325-4.63c.226-.143.226-.366 0-.508l-2.18-1.377c-.226-.143-.596-.143-.822 0l-4.62 2.92c-.226.143-.596.143-.822 0l-2.688-1.698c-.108-.068-.103-.192 0-.282l4.571-2.889c.226-.143.596-.143.822 0l2.18 1.377c.226.143.596.143.822 0l7.324-4.63c.226-.143.226-.366 0-.508l-2.18-1.377c-.226-.143-.596-.143-.822 0l-4.62 2.92c-.226.143-.596.143-.822 0l-2.688-1.698c-.108-.068-.103-.192 0-.282l4.571-2.889c.226-.143.596-.143.822 0l2.18 1.377c.226.143.596.143.822 0l7.324-4.63c.226-.143.226-.366 0-.508l-2.18-1.377c-.226-.143-.596-.143-.822 0l-4.62 2.92c-.226.143-.596.143-.822 0l-2.688-1.698c-.108-.068-.103-.192 0-.282l4.571-2.889c.226-.143.596-.143.822 0l2.18 1.377c.226.143.596.143.822 0l8.124-5.135c.226-.143.226-.366 0-.508L12.953 2.59c-.226-.143-.596-.143-.822 0l-9.822 6.16c-.226.143-.226.366 0 .508l3.617 2.287c.226.143.596.143.822 0l2.18-1.377c.226-.143.596-.143.822 0l4.62 2.92c.226.143.226.366 0 .508l-2.688 1.698c-.226.143-.596.143-.822 0l-4.571-2.889c-.226-.143-.596-.143-.822 0L2.31 14.682c-.108.068-.103.192 0 .282z"/></svg>
+    <span class="tip">Node.js</span>
+  </a>
+  <a class="dock-item" href="https://code.visualstudio.com" target="_blank" title="VS Code">
+    <svg viewBox="0 0 24 24" fill="#007acc"><path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.594L10.826 12l7.178-5.181v10.362z"/></svg>
+    <span class="tip">VS Code</span>
+  </a>
+</div>
+</div>
+
+<!-- Label -->
+<div class="desk-label">✦ WangLin Desktop ✦</div>
+
+<script>
+const thaiMonths = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const thaiDays = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+const greetings = ['ราตรีสวัสดิ์','สวัสดีตอนเช้า','สวัสดีตอนบ่าย','สวัสดีตอนเย็น'];
+
+function updateClock(){
+  const n=new Date();
+  const h=n.getHours(), m=n.getMinutes(), s=n.getSeconds();
+  document.getElementById('clockDisplay').innerHTML=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}<span class="sec">${String(s).padStart(2,'0')}</span>`;
+  document.getElementById('dateDisplay').textContent=`วัน${thaiDays[n.getDay()]}ที่ ${n.getDate()} ${thaiMonths[n.getMonth()]} ${n.getFullYear()+543}`;
+  const idx = h < 6 ? 0 : h < 12 ? 1 : h < 18 ? 2 : 3;
+  document.getElementById('greetingDisplay').textContent = `${greetings[idx]} ไมค์ · WangLin`;
+}
+updateClock();
+setInterval(updateClock,1000);
+</script>
+</body>
+</html>
